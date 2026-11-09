@@ -1,0 +1,4 @@
+// Run locally: node create-users.mjs username; paste resulting SQL into D1 console.
+import {pbkdf2Sync,randomBytes} from 'node:crypto';import {createInterface} from 'node:readline/promises';
+const username=process.argv[2]?.trim().toLowerCase();if(!/^[a-z0-9_-]{3,32}$/.test(username||'')){console.error('Usage: node create-users.mjs username (3-32 lowercase letters, numbers, _, -)');process.exit(1)}
+const rl=createInterface({input:process.stdin,output:process.stdout});const pass=await rl.question('Password (input visible; use a private terminal): ');rl.close();if(pass.length<12){console.error('Use a password of at least 12 characters');process.exit(1)}const salt=randomBytes(16).toString('hex'),hash=pbkdf2Sync(pass,salt,210000,32,'sha256').toString('hex');console.log(`INSERT INTO users (username,salt,password_hash) VALUES ('${username}','${salt}','${hash}');`);
